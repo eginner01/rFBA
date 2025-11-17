@@ -191,12 +191,6 @@ DATABASE_USER=root
 DATABASE_PASSWORD=password
 ```
 
-📖 **详细文档**：
-- [数据库迁移完整指南](docs/database_migration.md)
-- [Python Alembic 实现对比](docs/python_alembic_implementation.md)
-- [Rust SeaORM 实现详解](docs/rust_seaorm_implementation.md)
-- [自动迁移方案讨论](docs/rust_auto_migration.md)
-
 ### 4. 启动服务
 
 ```bash
@@ -207,11 +201,6 @@ cargo run
 RUN_MIGRATIONS=true cargo build --release
 ./target/release/fastapi_best_architecture_rust
 ```
-
-### 5. 接口文档
-
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
 
 ## 功能概览
 
@@ -264,16 +253,6 @@ impl MigrationTrait for Migration {
 #[derive(DeriveIden)]
 enum User { Table, Id, Username }
 ```
-
-### 核心特性
-
-| 特性 | Python (Alembic) | Rust (SeaORM) |
-|------|------------------|---------------|
-| **自动生成迁移** | ✅ autogenerate | ❌ 手动编写 |
-| **从数据库生成代码** | ✅ | ✅ generate entity |
-| **类型安全** | ❌ 运行时 | ✅ 编译时 |
-| **性能** | 中等 | 高 |
-| **部署** | 需要 Python 环境 | 单文件 |
 
 ### 最佳实践
 
