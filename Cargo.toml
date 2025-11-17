@@ -1,0 +1,150 @@
+[package]
+name = "fastapi_best_architecture_rust"
+version = "0.1.0"
+edition = "2021"
+default-run = "fastapi_best_architecture_rust"
+authors = ["Your Name <your.email@example.com>"]
+description = "Enterprise-level FastAPI backend architecture in Rust"
+license = "MIT"
+repository = "https://github.com/yourusername/fastapi_best_architecture_rust"
+keywords = ["fastapi", "axum", "web", "rust", "enterprise"]
+categories = ["web-programming", "network-programming"]
+
+[dependencies]
+# Web framework
+axum = "0.8.6"
+axum-extra = { version = "0.9", features = ["multipart"] }
+tower = { version = "0.5", features = ["util", "timeout", "limit", "load-shed", "make"] }
+tower-http = { version = "0.5", features = [
+    "cors",
+    "trace",
+    "compression-gzip",
+    "compression-br",
+    "fs",
+    "add-extension",
+] }
+
+# Async runtime
+tokio = { version = "1.0", features = ["full"] }
+tokio-util = { version = "0.7", features = ["io"] }
+
+# Database
+sea-orm = { version = "1.0", features = [
+    "sqlx-mysql",
+    "sqlx-postgres",
+    "sqlx-sqlite",
+    "runtime-async-std-rustls",
+    "macros",
+] }
+sqlx = { version = "0.7", features = ["mysql", "postgres", "sqlite", "runtime-tokio-rustls", "chrono", "uuid"] }
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Database Migration
+sea-orm-migration = { version = "1.0", features = [
+    "sqlx-mysql",
+    "sqlx-postgres",
+    "sqlx-sqlite",
+    "runtime-async-std-rustls",
+] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_with = { version = "3.0", features = ["json"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Captcha
+captcha = "1.0"
+image = { version = "0.24", features = ["png", "jpeg"] }
+
+# Validation
+validator = { version = "0.18", features = ["derive"] }
+
+# Security
+bcrypt = "0.15"
+jsonwebtoken = "9.0"
+rand = "0.8"
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json", "stream"] }
+
+# Caching
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager", "aio"] }
+moka = { version = "0.12", features = ["sync"] }
+
+# System monitoring
+sysinfo = "0.30"
+
+# Logging
+log = "0.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt", "chrono", "json"] }
+tracing-appender = "0.2"
+
+# Configuration
+config = "0.14"
+dotenvy = "0.15"
+envy = "0.4"
+toml = "0.8"
+
+# Time
+time = { version = "0.3", features = ["parsing", "formatting"] }
+
+# Utilities
+once_cell = "1.19"
+futures = "0.3"
+bytes = "1.6"
+base64 = "0.22"
+md5 = "0.7"
+libloading = "0.8"
+sha2 = "0.10"
+hex = "0.4"
+regex = "1.10"
+walkdir = "2.4"
+zip = "0.6"
+csv = "1.3"
+owo-colors = "3.5"
+git2 = "0.18"
+
+# WebSocket
+ tungstenite = "0.21"
+
+# Socket.IO-compatible server for WebSocket integration
+ socketioxide = { version = "0.18", features = ["v4", "tracing"] }
+
+# Plugins
+code_generator_plugin = { path = "plugins/code_generator" }
+config_plugin = { path = "plugins/config" }
+notice_plugin = { path = "plugins/notice" }
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockall = "0.12"
+rstest = "0.18"
+
+[features]
+default = ["sqlx-postgres"]
+sqlx-mysql = ["sea-orm/sqlx-mysql"]
+sqlx-postgres = ["sea-orm/sqlx-postgres"]
+
+# 默认主应用程序
+[[bin]]
+name = "fastapi_best_architecture_rust"
+path = "src/main.rs"
+
+# 工具程序
+[[bin]]
+name = "test_config"
+path = "tools/test_config.rs"
+
+[[bin]]
+name = "init_sql_data"
+path = "tools/init_sql_data.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"

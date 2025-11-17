@@ -1,0 +1,39 @@
+[package]
+name = "config_plugin"
+version = "0.0.2"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# 核心框架
+axum = { version = "0.8", features = ["json", "multipart"] }
+tokio = { version = "1.0", features = ["full"] }
+
+# 数据库
+sea-orm = { version = "1.0", features = ["sqlx-mysql", "runtime-tokio-rustls", "macros"] }
+
+# 序列化
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# 验证
+validator = { version = "0.18", features = ["derive"] }
+
+# 时间
+chrono = { version = "0.4", features = ["serde"] }
+
+# 错误处理
+anyhow = "1.0"
+thiserror = "1.0"
+
+# 日志
+tracing = "0.1"
+
+# 工具库
+lazy_static = "1.4"
+regex = "1.10"
+
+# Redis缓存
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager", "aio"] }

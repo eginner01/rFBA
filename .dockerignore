@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+.github
+
+# IDE
+.idea
+.vscode
+.claude
+
+# Rust
+target/
+**/*.rs.bk
+*.pdb
+
+# 环境配置
+.env
+*.log
+
+# 文档
+docs/
+*.md
+!README.md
+
+# 临时文件
+*.tmp
+*.pid
+*.swp
+*~
+
+# 数据库文件
+*.db
+*.db-shm
+*.db-wal
+
+# 测试文件
+*_test.rs
+test_*.rs
+
+# 其他
+frontend_source/
+fba_python/
+tools/

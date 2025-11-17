@@ -1,0 +1,185 @@
+# ==================================================
+# 使用说明:
+# 1. 启动所有服务: docker-compose up -d
+# 2. 查看日志: docker-compose logs -f
+# 3. 停止服务: docker-compose down
+# 4. 重启服务: docker-compose restart
+# 5. 初始化数据库: 
+#    docker-compose exec postgres psql -U postgres -d fba -f /docker-entrypoint-initdb.d/init_test_data.sql
+#
+# 环境说明:
+# - app: Rust 后端应用
+# - postgres: PostgreSQL 数据库
+# - redis: Redis 缓存
+# - adminer: 数据库管理界面 (可选)
+# ==================================================
+
+version: '3.8'
+
+services:
+  # ==================================================
+  # Rust 后端应用
+  # ==================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: fba-rust:latest
+    container_name: fba_app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # 运行环境
+      ENVIRONMENT: prod
+      
+      # 数据库配置
+      DATABASE_TYPE: PostgreSQL
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+      DATABASE_NAME: fba
+      DATABASE_SCHEMA: public
+      DATABASE_POOL_SIZE: 20
+      DATABASE_ECHO: "false"
+      
+      # Redis 配置
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_DATABASE: 0
+      
+      # Token 配置 (生产环境必须修改！)
+      TOKEN_SECRET_KEY: ${TOKEN_SECRET_KEY:-change_this_in_production}
+      TOKEN_EXPIRE_SECONDS: 86400
+      
+      # 日志配置
+      LOG_STD_LEVEL: INFO
+      RUST_LOG: info
+    volumes:
+      - app_data:/app/data
+      - app_logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fba_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==================================================
+  # PostgreSQL 数据库
+  # ==================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: fba_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+      POSTGRES_DB: fba
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
+      TZ: Asia/Shanghai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/postgresql:/docker-entrypoint-initdb.d:ro
+    networks:
+      - fba_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c max_connections=200
+      -c work_mem=4MB
+
+  # ==================================================
+  # Redis 缓存
+  # ==================================================
+  redis:
+    image: redis:7-alpine
+    container_name: fba_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - fba_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+
+  # ==================================================
+  # Adminer - 数据库管理界面 (可选)
+  # ==================================================
+  adminer:
+    image: adminer:latest
+    container_name: fba_adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    networks:
+      - fba_network
+    profiles:
+      - tools
+
+  # ==================================================
+  # Redis Commander - Redis 管理界面 (可选)
+  # ==================================================
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: fba_redis_commander
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    networks:
+      - fba_network
+    profiles:
+      - tools
+
+# ==================================================
+# 网络配置
+# ==================================================
+networks:
+  fba_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+# ==================================================
+# 数据卷配置
+# ==================================================
+volumes:
+  app_data:
+    driver: local
+  app_logs:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

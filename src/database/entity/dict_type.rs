@@ -1,0 +1,23 @@
+//! 字典类型实体 - sys_dict_type表
+
+use chrono::{DateTime, Utc};
+use sea_orm::prelude::*;
+use sea_orm::EnumIter;
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
+#[sea_orm(table_name = "sys_dict_type")]
+pub struct Model {
+    #[sea_orm(primary_key, auto_increment = false)]
+    pub id: i64,
+    pub name: String,
+    pub code: String,
+    pub remark: Option<String>,
+    pub created_time: DateTime<Utc>,
+    pub updated_time: Option<DateTime<Utc>>,
+}
+
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+pub enum Relation {}
+
+impl ActiveModelBehavior for ActiveModel {}
